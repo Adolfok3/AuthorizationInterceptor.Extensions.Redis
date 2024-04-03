@@ -1,2 +1,2 @@
-# AuthorizationInterceptor.Interceptors.Extensions.Redis
+# AuthorizationInterceptor.Extensions.Redis
 Soon..

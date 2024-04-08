@@ -100,4 +100,27 @@ public class RedisAuthorizationInterceptorTests
         await _cache.Received(1).GetAsync(Arg.Is<string>(i => i.StartsWith(KEY)));
         await _cache.Received(0).SetAsync(Arg.Is<string>(i => i.StartsWith(KEY)), Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>(), default);
     }
+
+    [Fact]
+    public async Task UpdateHeadersAsync_ShouldUpdateSuccessfuly()
+    {
+        //Arrange
+        var entries = new AuthorizationEntry(TimeSpan.FromMinutes(3))
+        {
+            { "Authorization", "Bearer token" }
+        };
+        _authentication.UnauthenticateAsync(entries).Returns(entries);
+
+        //Act
+        var headers = await _interceptor.UpdateHeadersAsync(entries);
+
+        //
+        Assert.NotNull(headers);
+        Assert.NotEqual(DateTimeOffset.MinValue, headers.AuthenticatedAt);
+        Assert.Equal(TimeSpan.FromMinutes(3), headers.ExpiresIn);
+        Assert.Contains(headers, a => a.Key == "Authorization" && a.Value == "Bearer token");
+        await _authentication.Received(1).UnauthenticateAsync(entries);
+        await _cache.Received(1).RemoveAsync(Arg.Is<string>(i => i.StartsWith(KEY)));
+        await _cache.Received(1).SetAsync(Arg.Is<string>(i => i.StartsWith(KEY)), Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>(), default);
+    }
 }

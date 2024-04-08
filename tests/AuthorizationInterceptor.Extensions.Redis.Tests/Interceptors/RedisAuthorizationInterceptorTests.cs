@@ -48,8 +48,8 @@ public class RedisAuthorizationInterceptorTests
         Assert.Equal(TimeSpan.FromMinutes(3), headers.ExpiresIn);
         Assert.Contains(headers, a => a.Key == "Authorization" && a.Value == "Bearer token");
         await _authentication.Received(1).AuthenticateAsync();
-        await _cache.Received(1).GetAsync(KEY);
-        await _cache.Received(1).SetAsync(KEY, Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>(), default);
+        await _cache.Received(1).GetAsync(Arg.Is<string>(i => i.StartsWith(KEY)));
+        await _cache.Received(1).SetAsync(Arg.Is<string>(i => i.StartsWith(KEY)), Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>(), default);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class RedisAuthorizationInterceptorTests
         };
         var json = AuthorizationEntryJsonSerializer.Serialize(entries);
         var bytes = Encoding.UTF8.GetBytes(json);
-        _cache.GetAsync(KEY).Returns(bytes);
+        _cache.GetAsync(Arg.Is<string>(i => i.StartsWith(KEY))).Returns(bytes);
 
         //Act
         var headers = await _interceptor.GetHeadersAsync();
@@ -73,8 +73,8 @@ public class RedisAuthorizationInterceptorTests
         Assert.Equal(TimeSpan.FromMinutes(3), headers.ExpiresIn);
         Assert.Contains(headers, a => a.Key == "Authorization" && a.Value == "Bearer token");
         await _authentication.Received(0).AuthenticateAsync();
-        await _cache.Received(1).GetAsync(KEY);
-        await _cache.Received(0).SetAsync(KEY, Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>(), default);
+        await _cache.Received(1).GetAsync(Arg.Is<string>(i => i.StartsWith(KEY)));
+        await _cache.Received(0).SetAsync(Arg.Is<string>(i => i.StartsWith(KEY)), Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>(), default);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class RedisAuthorizationInterceptorTests
         AuthorizationEntry entries = new OAuthEntry("toke", "type", 123, "refresh", "scope");
         var json = AuthorizationEntryJsonSerializer.Serialize(entries);
         var bytes = Encoding.UTF8.GetBytes(json);
-        _cache.GetAsync(KEY).Returns(bytes);
+        _cache.GetAsync(Arg.Is<string>(i => i.StartsWith(KEY))).Returns(bytes);
 
         //Act
         var headers = await _interceptor.GetHeadersAsync();
@@ -97,7 +97,7 @@ public class RedisAuthorizationInterceptorTests
         Assert.Contains(headers, a => a.Key == "Authorization" && a.Value == "type toke");
         Assert.NotNull(headers.OAuthEntry);
         await _authentication.Received(0).AuthenticateAsync();
-        await _cache.Received(1).GetAsync(KEY);
-        await _cache.Received(0).SetAsync(KEY, Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>(), default);
+        await _cache.Received(1).GetAsync(Arg.Is<string>(i => i.StartsWith(KEY)));
+        await _cache.Received(0).SetAsync(Arg.Is<string>(i => i.StartsWith(KEY)), Arg.Any<byte[]>(), Arg.Any<DistributedCacheEntryOptions>(), default);
     }
 }

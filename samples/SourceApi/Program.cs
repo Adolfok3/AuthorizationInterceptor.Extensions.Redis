@@ -1,5 +1,6 @@
 using AuthorizationInterceptor.Entries;
 using AuthorizationInterceptor.Extensions;
+using AuthorizationInterceptor.Extensions.Redis.Extensions;
 using AuthorizationInterceptor.Handlers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -13,7 +14,12 @@ builder.Services.AddHttpClient("TargetApiAuth")
     .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:5121"));
 
 builder.Services.AddHttpClient("TargetApi")
-    .AddAuthorizationInterceptorHandler<TargetApiAuthClass>()
+    .AddAuthorizationInterceptorHandler<TargetApiAuthClass>(opt => opt.DisableMemoryCache = true)
+    .AddStackExchangeRedisCache(opt =>
+    {
+        opt.Configuration = "localhost:8082";
+        opt.InstanceName = "target_api";
+    })
     .BuildAuthorizationInterceptor()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:5121"));
 

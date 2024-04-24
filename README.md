@@ -28,7 +28,7 @@ services.AddHttpClient("TargetApi")
 			options.UseStackExchangeRedisCacheInterceptor(redisOptions => 
 			{
 				redisOptions.Configuration = "redisConnStr";
-				opt.InstanceName = "target_api";
+				redisOptions.InstanceName = "target_api";
 			});
 		})
 ```

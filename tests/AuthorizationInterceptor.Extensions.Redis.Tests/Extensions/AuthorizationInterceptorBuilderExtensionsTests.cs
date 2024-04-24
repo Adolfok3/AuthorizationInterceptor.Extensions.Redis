@@ -1,11 +1,9 @@
-﻿using AuthorizationInterceptor.Builder;
+﻿using AuthorizationInterceptor.Extensions.Abstractions.Options;
 using AuthorizationInterceptor.Extensions.Redis.Extensions;
 using AuthorizationInterceptor.Extensions.Redis.Interceptors;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace AuthorizationInterceptor.Extensions.Redis.Tests.Extensions;
@@ -13,43 +11,34 @@ namespace AuthorizationInterceptor.Extensions.Redis.Tests.Extensions;
 public class AuthorizationInterceptorBuilderExtensionsTests
 {
     [Fact]
-    public void AddStackExchangeRedisCache_ShouldRegisterDistributedCacheDependencies_AndAddInterceptor()
+    public void UseStackExchangeRedisCache_ShouldRegisterDistributedCacheDependencies_AndAddInterceptor()
     {
         // Arrange
         var services = new ServiceCollection();
-        var httpBuilder = Substitute.For<IHttpClientBuilder>();
-        httpBuilder.Services.Returns(services);
-        var builder = new AuthorizationInterceptorBuilder(httpBuilder, null, null);
+        var options = Substitute.For<IAuthorizationInterceptorOptions>();
 
         // Act
-        builder.AddStackExchangeRedisCache(opt =>
+        options.UseStackExchangeRedisCacheInterceptor(opt =>
         {
             opt.InstanceName = "test";
             opt.Configuration = "test";
         });
 
         // Assert
-        Assert.Single(services, service => service.ServiceType == typeof(IDistributedCache));
-
-        var fieldInfo = builder.GetType().GetField("_interceptors", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var interceptors = (List<Type>)fieldInfo.GetValue(builder);
-
-        Assert.Contains(typeof(RedisAuthorizationInterceptor), interceptors);
+        options.Received(1).UseCustomInterceptor<RedisAuthorizationInterceptor>(Arg.Any<Func<IServiceCollection, IServiceCollection>?>());
     }
 
     [Fact]
-    public void AddStackExchangeRedisCache_WithOptionsNull_ShouldThrows()
+    public void UseStackExchangeRedisCache_WithOptionsNull_ShouldThrows()
     {
         // Arrange
         var services = new ServiceCollection();
-        var httpBuilder = Substitute.For<IHttpClientBuilder>();
-        httpBuilder.Services.Returns(services);
-        var builder = new AuthorizationInterceptorBuilder(httpBuilder, null, null);
+        var options = Substitute.For<IAuthorizationInterceptorOptions>();
 
         // Act
-        var act = () => builder.AddStackExchangeRedisCache(null);
+        var act = () => options.UseStackExchangeRedisCacheInterceptor(null);
 
         // Assert
-        Assert.Equal("Value cannot be null. (Parameter 'options')", Assert.Throws<ArgumentNullException>(act).Message);
+        Assert.Equal("Value cannot be null. (Parameter 'optionsRedis')", Assert.Throws<ArgumentNullException>(act).Message);
     }
 }

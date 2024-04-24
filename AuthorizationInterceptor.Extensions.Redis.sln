@@ -5,7 +5,7 @@ VisualStudioVersion = 17.9.34701.34
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthorizationInterceptor.Extensions.Redis", "src\AuthorizationInterceptor.Extensions.Redis.csproj", "{8C0C70AE-C2EF-4B40-973B-382A729464C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthorizationInterceptor.Extensions.Redis.Tests", "tests\AuthorizationInterceptor.Extensions.Redis.Tests\AuthorizationInterceptor.Extensions.Redis.Tests.csproj", "{4D741EAA-D3E0-4FA7-852F-B5C25209E5F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthorizationInterceptor.Extensions.Redis.Tests", "tests\AuthorizationInterceptor.Extensions.Redis.Tests\AuthorizationInterceptor.Extensions.Redis.Tests.csproj", "{4D741EAA-D3E0-4FA7-852F-B5C25209E5F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

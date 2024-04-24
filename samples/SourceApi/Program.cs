@@ -1,7 +1,7 @@
-using AuthorizationInterceptor.Entries;
 using AuthorizationInterceptor.Extensions;
+using AuthorizationInterceptor.Extensions.Abstractions.Handlers;
+using AuthorizationInterceptor.Extensions.Abstractions.Headers;
 using AuthorizationInterceptor.Extensions.Redis.Extensions;
-using AuthorizationInterceptor.Handlers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,13 +14,14 @@ builder.Services.AddHttpClient("TargetApiAuth")
     .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:5121"));
 
 builder.Services.AddHttpClient("TargetApi")
-    .AddAuthorizationInterceptorHandler<TargetApiAuthClass>(opt => opt.DisableMemoryCache = true)
-    .AddStackExchangeRedisCache(opt =>
+    .AddAuthorizationInterceptorHandler<TargetApiAuthClass>(options =>
     {
-        opt.Configuration = "localhost:8082";
-        opt.InstanceName = "target_api";
+        options.UseStackExchangeRedisCacheInterceptor(redisOptions =>
+        {
+            redisOptions.Configuration = "localhost:6379";
+            redisOptions.InstanceName = "target_api";
+        });
     })
-    .BuildAuthorizationInterceptor()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:5121"));
 
 var app = builder.Build();
@@ -63,19 +64,19 @@ public class TargetApiAuthClass : IAuthenticationHandler
         _client = httpClientFactory.CreateClient("TargetApiAuth");
     }
 
-    public async Task<AuthorizationEntry> AuthenticateAsync()
+    public async Task<AuthorizationHeaders?> AuthenticateAsync()
     {
         var response = await _client.PostAsync("auth", null);
         var content = await response.Content.ReadAsStringAsync();
         var user = JsonSerializer.Deserialize<User>(content);
-        return new OAuthEntry(user.AccessToken, user.TokenType, user.ExpiresIn, user.RefreshToken);
+        return new OAuthHeaders(user.AccessToken, user.TokenType, user.ExpiresIn, user.RefreshToken);
     }
 
-    public async Task<AuthorizationEntry> UnauthenticateAsync(AuthorizationEntry? entries)
+    public async Task<AuthorizationHeaders?> UnauthenticateAsync(AuthorizationHeaders? entries)
     {
-        var response = await _client.PostAsync($"refresh?refresh={entries.OAuthEntry.RefreshToken}", null);
+        var response = await _client.PostAsync($"refresh?refresh={entries.OAuthHeaders.RefreshToken}", null);
         var content = await response.Content.ReadAsStringAsync();
         var user = JsonSerializer.Deserialize<User>(content);
-        return new OAuthEntry(user.AccessToken, user.TokenType, user.ExpiresIn, user.RefreshToken);
+        return new OAuthHeaders(user.AccessToken, user.TokenType, user.ExpiresIn, user.RefreshToken);
     }
 }

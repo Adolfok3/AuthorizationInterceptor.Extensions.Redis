@@ -13,7 +13,7 @@ namespace AuthorizationInterceptor.Extensions.Redis.Tests.Interceptors;
 
 public class RedisAuthorizationInterceptorTests
 {
-    private const string KEY = "authorization_interceptor_redis_cache_RedisAuthorizationInterceptor";
+    private const string KEY = "authorization_interceptor_redis_cache_RedisAuthorizationInterceptor_test";
     private readonly IDistributedCache _cache;
     private IAuthorizationInterceptor _interceptor;
 
@@ -36,7 +36,7 @@ public class RedisAuthorizationInterceptorTests
         _cache.GetAsync(KEY).Returns(bytes);
 
         //Act
-        headers = await _interceptor.GetHeadersAsync();
+        headers = await _interceptor.GetHeadersAsync("test");
 
         //
         Assert.NotNull(headers);
@@ -57,7 +57,7 @@ public class RedisAuthorizationInterceptorTests
         _cache.GetAsync(KEY).Returns(bytes);
 
         //Act
-        headers = await _interceptor.GetHeadersAsync();
+        headers = await _interceptor.GetHeadersAsync("test");
 
         //Assert
         Assert.NotNull(headers);
@@ -77,7 +77,7 @@ public class RedisAuthorizationInterceptorTests
         _cache.GetAsync(KEY).Returns(Task.FromResult<byte[]?>(null));
 
         //Act
-        var headers = await _interceptor.GetHeadersAsync();
+        var headers = await _interceptor.GetHeadersAsync("test");
 
         //
         Assert.Null(headers);
@@ -95,7 +95,7 @@ public class RedisAuthorizationInterceptorTests
         };
 
         //Act
-        var act = () => _interceptor.UpdateHeadersAsync(null, headers);
+        var act = () => _interceptor.UpdateHeadersAsync("test", null, headers);
 
         //
         Assert.Null(await Record.ExceptionAsync(act));
@@ -106,7 +106,7 @@ public class RedisAuthorizationInterceptorTests
     public async Task UpdateHeadersAsync_WithNullHeaders_ShouldNotUpdate()
     {
         //Act
-        var act = () => _interceptor.UpdateHeadersAsync(null, null);
+        var act = () => _interceptor.UpdateHeadersAsync("test", null, null);
 
         //
         Assert.Null(await Record.ExceptionAsync(act));

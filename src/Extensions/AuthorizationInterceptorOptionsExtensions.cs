@@ -12,7 +12,7 @@ namespace AuthorizationInterceptor.Extensions.Redis.Extensions
     public static class AuthorizationInterceptorOptionsExtensions
     {
         /// <summary>
-        /// Configures the authorization interceptor to use an Redis distributed cache interceptor.
+        /// Configures the authorization interceptor to use a Redis distributed cache interceptor.
         /// </summary>
         /// <param name="options"><see cref="IAuthorizationInterceptorOptions"/></param>
         /// <param name="optionsRedis"><see cref="RedisCacheOptions"/></param>
